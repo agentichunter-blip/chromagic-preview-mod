@@ -2,7 +2,7 @@
 
 Run commands from the repository root. The documented build environment is macOS/Linux with Bash, Python 3.12, CMake 3.22+, Ninja, FFmpeg (with libx264), and **ESP-IDF v5.3 / 5.3.0** with its ESP32 toolchain. `mcu/dependencies.lock` pins LVGL 8.4.0. ESP-IDF downloads managed components on the first build, so internet access is required then.
 
-Install ESP-IDF v5.3 and its ESP32 tools using Espressif's setup instructions. Activate that installation's `export.sh` before building. Other ESP-IDF versions are rejected by the helper script.
+Install ESP-IDF v5.3 and its ESP32 tools using [Espressif's Linux/macOS setup instructions](https://docs.espressif.com/projects/esp-idf/en/v5.3/esp32/get-started/linux-macos-setup.html). Select the exact `v5.3` tag, not the latest release. Activate that installation's `export.sh` before building. Other ESP-IDF versions are rejected by the helper script.
 
 Create a separate Python environment for the media tools and host tests:
 

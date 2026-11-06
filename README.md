@@ -19,7 +19,9 @@ ChroMagic's cartridge backup and save features remain available. An installed SD
 
 ## Install
 
-These instructions are for a Chromatic already running **ChroMagic 1.0.1 with FPGA 18.38**. If starting from stock, first install upstream ChroMagic with [ChroMagician](https://github.com/cursedtoast2/ChroMagician), then verify the versions in the device's status menu. Selecting upstream ChroMagic in that app installs upstream firmware, not this mod.
+These instructions are for a Chromatic already running **ChroMagic 1.0.1 with FPGA 18.38**. If starting from stock, first install upstream ChroMagic with [ChroMagician](https://github.com/cursedtoast2/ChroMagician), then verify the versions in the device's status menu. Selecting upstream ChroMagic in that app installs upstream firmware, not this mod. Upstream ChroMagician currently provides Windows and Linux installers; use a supported host for the initial installation or rollback. The source build and application-only flashing commands below can be run on macOS/Linux once the required base firmware is installed.
+
+Download/extract this repository or clone it, then open a terminal in its root directory (the folder containing this README). All relative paths below start there. These commands use the esptool 4.x bundled with ESP-IDF v5.3; see [Espressif's command reference](https://docs.espressif.com/projects/esptool/en/release-v4/esp32/esptool/basic-commands.html).
 
 1. Back up your SD card, especially saves. Build the application using [the build guide](docs/building.md). The output is `mcu/build/mcu_fw.bin`.
 2. Keep the device powered on and connect it using a data-capable USB cable. Close ChroMagician, serial monitors, and other applications using the device.
@@ -30,22 +32,24 @@ These instructions are for a Chromatic already running **ChroMagic 1.0.1 with FP
    PORT=/dev/cu.usbmodemYOUR_DEVICE
    ```
 
-4. Save a private backup of the existing 4 MiB MCU flash. Keep this outside the repository and do not share it. This backs up the MCU only, not the SD card or FPGA.
+4. Save a private backup of the existing 4 MiB MCU flash. Choose a new filename if a backup already exists so you do not overwrite your original backup. Keep this outside the repository and do not share it. This backs up the MCU only, not the SD card or FPGA.
 
    ```sh
    python -m esptool --chip esp32 --port "$PORT" --baud 460800 \
      read_flash 0x0 0x400000 ../chromatic-mcu-backup.bin
    ```
 
-5. Inspect the application image, then write **only the application at `0x10000`**. Run from the repository root. Do not use `erase_flash` or the general `idf.py flash` command for this upgrade.
+5. Continue only after the backup finishes successfully and produces a 4,194,304-byte file. Inspect the application image, then write **only the application at `0x10000`**. Run from the repository root. Do not use `erase_flash` or the general `idf.py flash` command for this upgrade.
 
    ```sh
-   python -m esptool --chip esp32 image_info mcu/build/mcu_fw.bin
+   python -m esptool --chip esp32 image_info --version 2 mcu/build/mcu_fw.bin
    python -m esptool --chip esp32 --port "$PORT" --baud 460800 \
      --before default_reset --after hard_reset write_flash \
      --flash_mode dio --flash_freq 40m --flash_size 4MB \
      0x10000 mcu/build/mcu_fw.bin
    ```
+
+   Before running `write_flash`, check that `image_info` reports project `mcu_fw`, app version `0.13.4-art19`, ESP-IDF `v5.3`, and a valid checksum/validation hash.
 
 6. Wait for `Hash of data verified.` before disconnecting. Power-cycle the device and confirm MCU `v0.13.4-art19`, Chromatic `1.0.1-art19 (4.2)`, and FPGA `18.38`. Leave **C. MAGICIAN** off for on-device browsing and gameplay.
 7. Add optional [covers and gameplay previews](docs/media.md) to the SD card. Games remain in `CHROMAGIC/BACKUPS`. The browser works without media.
