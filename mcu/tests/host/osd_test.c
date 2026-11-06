@@ -440,14 +440,8 @@ int main(void) {
     assert(Text(Screen,"2/7") && ArtRequested && ArtRequests==2 && ClockMs==0);
     Snapshot("backups-pending-cover");
     assert(lv_obj_has_flag(Text(Screen,"NO COVER"), LV_OBJ_FLAG_HIDDEN));
-    assert(Frame[44*160+16].full>0 && Frame[44*160+16].full<0xf800);
-    lv_obj_t *List = OverlayList(Screen); assert(List && lv_obj_is_visible(List));
-    assert(lv_obj_get_style_opa(List,0)==LV_OPA_COVER);
-    unsigned Visible = 0;
-    for(unsigned I=1;I<lv_obj_get_child_cnt(List);++I) Visible += lv_obj_is_visible(lv_obj_get_child(List,I));
-    assert(Visible==5); /* neighboring titles, with a distinct selected row */
-    assert(lv_obj_get_height(lv_obj_get_child(List,2))==10);
-    assert(lv_obj_get_style_text_color(lv_obj_get_child(List,2),0).full==lv_color_black().full);
+    assert(Frame[44*160+16].full==0xf800); /* taps retain unobscured media */
+    lv_obj_t *List = OverlayList(Screen); assert(List && !lv_obj_is_visible(List));
     DrawScreen(&Menu, Screen); assert(ArtRequests==2); /* don't repeat a pending request */
     Menu.fnOnButton(kButton_Up,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
     assert(Text(Screen,"1/7") && ArtRequests==3);
@@ -455,7 +449,15 @@ int main(void) {
     HeldBits=kButtonBits_Down;
     Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
     assert(Text(Screen,"2/7") && ArtRequested && ArtRequests==4);
-    for(ClockMs=180;ClockMs<=1380;ClockMs+=20) DrawScreen(&Menu, Screen);
+    assert(!lv_obj_is_visible(List));
+    ClockMs=509; DrawScreen(&Menu,Screen); assert(!lv_obj_is_visible(List) && Text(Screen,"2/7"));
+    ClockMs=510; DrawScreen(&Menu,Screen); assert(lv_obj_is_visible(List) && Text(Screen,"3/7"));
+    assert(lv_obj_get_style_opa(List,0)==LV_OPA_COVER);
+    unsigned Visible=0;
+    for(unsigned I=1;I<lv_obj_get_child_cnt(List);++I) Visible+=lv_obj_is_visible(lv_obj_get_child(List,I));
+    assert(Visible==5 && lv_obj_get_height(lv_obj_get_child(List,3))==10);
+    assert(lv_obj_get_style_text_color(lv_obj_get_child(List,3),0).full==lv_color_black().full);
+    for(ClockMs=530;ClockMs<=1380;ClockMs+=20) DrawScreen(&Menu, Screen);
     assert(!ArtRequested); /* fast tier cancels queued slow art, including at the endpoint */
     const unsigned BeforeFast = ArtRequests;
     for(;ClockMs<=1500;ClockMs+=20) DrawScreen(&Menu, Screen);
@@ -521,20 +523,30 @@ int main(void) {
     VideoMissing=false;
     Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
     assert(!VideoRequested); /* selection cancels before another frame is consumed */
-    List=OverlayList(Screen); assert(lv_obj_is_visible(List));
+    List=OverlayList(Screen); assert(!lv_obj_is_visible(List));
     ArtReady=true; DrawScreen(&Menu, Screen);
-    const uint64_t StoppedAt=ClockMs;
-    ClockMs=StoppedAt+500; DrawScreen(&Menu, Screen); assert(!lv_obj_is_visible(List));
-    ClockMs=StoppedAt+1999; DrawScreen(&Menu, Screen); assert(!VideoRequested);
-    ClockMs=StoppedAt+2000; DrawScreen(&Menu, Screen); assert(VideoRequested);
+    const uint64_t TapAt=ClockMs;
+    ClockMs=TapAt+1499; DrawScreen(&Menu, Screen); assert(!VideoRequested);
+    ClockMs=TapAt+1500; DrawScreen(&Menu, Screen); assert(VideoRequested);
     VideoReady=true; DrawScreen(&Menu, Screen);
-    /* A new tap instantly restores a list that was fading. */
-    Menu.fnOnButton(kButton_Up,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+    /* Short held presses and rapid taps never summon the list. */
+    HeldBits=kButtonBits_Up; Menu.fnOnButton(kButton_Up,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+    assert(!lv_obj_is_visible(List));
+    ClockMs+=349; DrawScreen(&Menu, Screen); assert(!lv_obj_is_visible(List));
+    HeldBits=0; DrawScreen(&Menu, Screen); assert(!lv_obj_is_visible(List));
+    for(unsigned I=0;I<4;++I) {
+        Menu.fnOnButton(I%2?kButton_Up:kButton_Down,kButtonState_Pressed,NULL);
+        DrawScreen(&Menu, Screen); assert(!lv_obj_is_visible(List)); ClockMs+=50;
+    }
+    /* A sustained hold displays five rows over the frozen video frame. */
+    HeldBits=kButtonBits_Down; Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+    ClockMs+=350; DrawScreen(&Menu, Screen); assert(lv_obj_is_visible(List));
     Snapshot("backups-list-frozen-video");
     assert(Frame[44*160+16].full>0 && Frame[44*160+16].full<0xffff);
+    HeldBits=0; DrawScreen(&Menu, Screen);
     ClockMs+=425; DrawScreen(&Menu, Screen); assert(lv_obj_get_style_opa(List,0)<LV_OPA_COVER);
-    Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
-    assert(lv_obj_get_style_opa(List,0)==LV_OPA_COVER);
+    Menu.fnOnButton(kButton_Up,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+    assert(!lv_obj_is_visible(List)); /* a tap dismisses an old hold's fading list */
     Menu.fnOnTransition(NULL);
     lv_refr_now(NULL);
     lv_mem_monitor_t BeforeCycles, AfterCycles;
@@ -542,7 +554,9 @@ int main(void) {
     for (unsigned Cycle=0; Cycle<100; ++Cycle) {
         DrawScreen(&Menu, Screen); JobReady=true; DrawScreen(&Menu, Screen);
         ArtReady=true; DrawScreen(&Menu, Screen);
-        Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+        HeldBits=kButtonBits_Down; Menu.fnOnButton(kButton_Down,kButtonState_Pressed,NULL); DrawScreen(&Menu, Screen);
+        ClockMs+=350; DrawScreen(&Menu, Screen);
+        HeldBits=0; DrawScreen(&Menu, Screen);
         ClockMs+=425; DrawScreen(&Menu, Screen); /* close during an overlay fade */
         lv_refr_now(NULL);
         Menu.fnOnTransition(NULL);

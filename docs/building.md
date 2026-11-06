@@ -20,7 +20,7 @@ CHROMAGIC_HOST_PYTHON="$PWD/.venv-media/bin/python" \
 
 CMake, Ninja, and FFmpeg must be on PATH. The helper builds and tests only; it does not connect to a device. Output: `mcu/build/mcu_fw.bin`. Use the application-only installation steps in the root README.
 
-Use a fresh source directory for reproducible builds. A pre-existing `mcu/sdkconfig` overrides `sdkconfig.defaults`; do not carry configuration from another revision into this build. The defaults identify art19 and use 16-bit RGB565 without byte swapping.
+Use a fresh source directory for reproducible builds. A pre-existing `mcu/sdkconfig` overrides `sdkconfig.defaults`; do not carry configuration from another revision into this build. The defaults identify art20 and use 16-bit RGB565 without byte swapping.
 
 ## Host tests only
 

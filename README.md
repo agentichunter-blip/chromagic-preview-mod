@@ -2,7 +2,7 @@
 
 An experimental modification of [CursedToast's ChroMagic](https://github.com/cursedtoast2/ChroMagic) for the ModRetro Chromatic. Browse Game Boy and Game Boy Color backups with cover art, looping gameplay previews, and a compact scrolling game list.
 
-**Version:** Chromatic `1.0.1-art19 (4.2)` / MCU `v0.13.4-art19`. Based on ChroMagic 1.0.1; tested with FPGA **18.38**. This mod changes the MCU application only. There is no modified FPGA `.fs` file to install.
+**Version:** Chromatic `1.0.1-art20 (4.2)` / MCU `v0.13.4-art20`. Based on ChroMagic 1.0.1; tested with FPGA **18.38**. This mod changes the MCU application only. There is no modified FPGA `.fs` file to install.
 
 This is a personal, experimental project with no guaranteed support or release schedule. No game ROMs, personal saves, cover packs, or gameplay video packs are included. Supply your own games and media.
 
@@ -10,7 +10,7 @@ This is a personal, experimental project with no guaranteed support or release s
 
 - Game Boy / Game Boy Color system picker and nested folder navigation.
 - Cover art followed by an optional silent, looping gameplay preview.
-- Five-row game overlay while scrolling, accelerated navigation, and scrolling titles.
+- Five-row game overlay when holding Up/Down, accelerated navigation, and scrolling titles.
 - Game title and progress indicator during loading.
 - Background media reads, cancellation during navigation, and SD access coordination.
 - Files beginning with `[BIOS]` are hidden in the browser without being deleted.
@@ -49,9 +49,9 @@ Download/extract this repository or clone it, then open a terminal in its root d
      0x10000 mcu/build/mcu_fw.bin
    ```
 
-   Before running `write_flash`, check that `image_info` reports project `mcu_fw`, app version `0.13.4-art19`, ESP-IDF `v5.3`, and a valid checksum/validation hash.
+   Before running `write_flash`, check that `image_info` reports project `mcu_fw`, app version `0.13.4-art20`, ESP-IDF `v5.3`, and a valid checksum/validation hash.
 
-6. Wait for `Hash of data verified.` before disconnecting. Power-cycle the device and confirm MCU `v0.13.4-art19`, Chromatic `1.0.1-art19 (4.2)`, and FPGA `18.38`. Leave **C. MAGICIAN** off for on-device browsing and gameplay.
+6. Wait for `Hash of data verified.` before disconnecting. Power-cycle the device and confirm MCU `v0.13.4-art20`, Chromatic `1.0.1-art20 (4.2)`, and FPGA `18.38`. Leave **C. MAGICIAN** off for on-device browsing and gameplay.
 7. Add optional [covers and gameplay previews](docs/media.md) to the SD card. Games remain in `CHROMAGIC/BACKUPS`. The browser works without media.
 
 The application occupies a 1 MiB partition. These commands leave the existing bootloader, partition table, and FPGA in place. Compatibility with other firmware layouts or FPGA versions has not been established.
@@ -66,7 +66,7 @@ The application occupies a 1 MiB partition. These commands leave the existing bo
 
 At the two-system picker, Left/Right selects a system and A opens it. B or Up returns focus to the tabs; A or Down returns to the picker. Roots with additional entries use the normal folder list.
 
-In a folder, Up/Down selects games, holding accelerates, A launches or opens a folder, and B goes back. The five-row list briefly appears over the media while navigating. Covers remain visible for 1.5 seconds before a matching gameplay clip starts. Missing clips leave the cover visible.
+In a folder, tapping Up/Down immediately selects the next game without showing a list. Holding for 350 milliseconds reveals the five-row list and starts repeating; continuing to hold accelerates scrolling. A launches or opens a folder, and B goes back. The list fades after releasing the held direction; a new tap dismisses it. Covers remain visible for 1.5 seconds before a matching gameplay clip starts. Missing clips leave the cover visible.
 
 ## Development and testing
 

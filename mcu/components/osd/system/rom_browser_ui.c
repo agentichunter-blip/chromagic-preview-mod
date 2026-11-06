@@ -275,6 +275,7 @@ static void TickSelection(uint64_t Time) {
         return;
     }
     const unsigned Buttons = Held();
+    const bool Pressed = C.Pressed != 0;
     const bool WasFast = C.Scroll.Rate >= 12;
     const RomBrowserScrollStep_t Step = RomBrowserScroll_Update(&C.Scroll, Time, Buttons, C.Pressed);
     C.Pressed = 0;
@@ -285,7 +286,12 @@ static void TickSelection(uint64_t Time) {
         const bool KeepFrame = C.ArtValid && !Directory(C.Selected);
         ForgetArt(); C.ArtValid = KeepFrame;
     }
-    if (Step.Steps || C.Scroll.Direction) C.ListUntil = Time + kListHoldMs + kListFadeMs;
+    /* Taps only select a game. Reveal the list when held input reaches the
+     * scroll engine's first repeat (350 ms), including at a list endpoint.
+     * A fresh press also dismisses any previous hold's lingering overlay. */
+    if (Pressed) C.ListUntil = 0;
+    if (C.Scroll.Direction && C.Scroll.Rate)
+        C.ListUntil = Time + kListHoldMs + kListFadeMs;
     const uint64_t Remaining = C.ListUntil > Time ? C.ListUntil - Time : 0;
     const uint8_t Opacity = Remaining >= kListFadeMs ? LV_OPA_COVER :
         (uint8_t)(Remaining * LV_OPA_COVER / kListFadeMs);
