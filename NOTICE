@@ -1,3 +1,7 @@
+ChroMagic is by CursedToast: https://github.com/cursedtoast2/ChroMagic
+This repository is an independent artwork/gameplay-preview modification.
+See CREDITS.md for source provenance and additional acknowledgments.
+
 ChroMagic is based on ModRetro's Chromatic firmware and FPGA design.
 See mcu/LICENSE and fpga/LICENSE for their license terms.
 

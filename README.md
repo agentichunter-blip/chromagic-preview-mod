@@ -72,6 +72,8 @@ When reporting an issue, include your MCU/FPGA versions, steps to reproduce, and
 
 ## Credits and licenses
 
-ChroMagic is by **CursedToast**, based on ModRetro's firmware and FPGA design. This repository adds the artwork/gameplay browser modifications; it is not an official upstream release and is not affiliated with ModRetro or Nintendo.
+ChroMagic is by **[CursedToast](https://github.com/cursedtoast2/ChroMagic)**, based on **ModRetro's** firmware and FPGA design. This repository adds the artwork/gameplay browser modifications; it is not an official upstream release and is not affiliated with ModRetro or Nintendo.
+
+See [CREDITS.md](CREDITS.md) for upstream authors, source provenance, and the scope of this mod. The clean import commit does not claim authorship of upstream work.
 
 Existing licenses and notices are retained: [MCU license](mcu/LICENSE), [FPGA license](fpga/LICENSE), and [NOTICE](NOTICE). See [system logo credits](mcu/tools/platform-logos/README.md) for the included wordmarks. `SOURCE_SNAPSHOT.json` records upstream component snapshots; the mod's base commit is `e611a1ef36eb9aa93f706d836f5b0e46129d7137`.
