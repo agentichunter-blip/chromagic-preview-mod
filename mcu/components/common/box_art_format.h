@@ -1,0 +1,3 @@
+#pragma once
+enum { BOX_ART_WIDTH = 72, BOX_ART_HEIGHT = 80,
+       BOX_ART_BYTES = BOX_ART_WIDTH * BOX_ART_HEIGHT * 2 };
